@@ -1,8 +1,8 @@
-require 'legion/extensions/health/runners/health'
+require 'legion/extensions/actors/subscription'
 
 module Legion::Extensions::Health::Actor
   class Health < Legion::Extensions::Actors::Subscription
-    def runner_method
+    def runner_function
       'update'
     end
   end
