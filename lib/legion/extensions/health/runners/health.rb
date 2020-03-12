@@ -1,6 +1,8 @@
 module Legion::Extensions::Health
   module Runners
     module Health
+      include Legion::Extensions::Helpers::Lex
+
       def self.update(hostname:, **opts)
         item = Legion::Data::Model::Node.where(name: hostname).first
 
