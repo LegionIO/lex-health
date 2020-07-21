@@ -6,18 +6,17 @@ module Legion::Extensions::Health
       def self.update(hostname:, **opts)
         item = Legion::Data::Model::Node.where(name: hostname).first
 
-        if item.nil?
-          return { success: true, hostname: hostname, **opts } if insert(hostname: hostname, **opts)
-
-          return { success: false, hostname: hostname, **opts }
-        end
+        return { success: insert(hostname: hostname, **opts), hostname: hostname, **opts } if item.nil?
 
         if opts.key?(:timestamp) && !item.values[:updated].nil? && item.values[:updated] > Time.parse(opts[:timestamp])
-          return { success: false, reason: 'entry already updated', hostname: hostname, db_updated: item.values[:updated], **opts }
+          return { success:    false,
+                   reason:     'entry already updated',
+                   hostname:   hostname,
+                   db_updated: item.values[:updated],
+                   **opts }
         end
 
-        item.update(active: 1, status: opts[:status], name: hostname)
-        { success: true, hostname: hostname, **opts }
+        { success: item.update(active: 1, status: opts[:status], name: hostname), hostname: hostname, **opts }
       end
 
       def self.insert(hostname:, status: 'unknown', **opts)
