@@ -4,7 +4,7 @@ module Legion::Extensions::Health
       include Legion::Extensions::Helpers::Lex
 
       def update(hostname:, **opts)
-        item = Legion::Data::Model::Node.where(name: hostname).first
+        item = Legion::Data::Model::Node[name: hostname]
 
         return { success: insert(hostname: hostname, **opts), hostname: hostname, **opts } if item.nil?
 
@@ -16,7 +16,11 @@ module Legion::Extensions::Health
                    **opts }
         end
 
-        { success: item.update(active: 1, status: opts[:status], name: hostname), hostname: hostname, **opts }
+        {
+          success:  item.update(active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP),
+          hostname: hostname,
+          **opts
+        }
       end
 
       def insert(hostname:, status: 'unknown', **opts)
