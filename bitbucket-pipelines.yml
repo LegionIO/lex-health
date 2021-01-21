@@ -16,4 +16,6 @@ pipelines:
           name: Push to Docker
           deployment: Docker
           script:
+            - 'apt-get update'
+            - 'apt-get install -y docker-ce'
             - './docker_deploy.rb'
