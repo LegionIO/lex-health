@@ -8,9 +8,9 @@ module Legion::Extensions::Health
 
         def queue_options
           {
-            arguments:   {
+            arguments: {
               'x-single-active-consumer': true,
-              'x-dead-letter-exchange':   'node.dlx'
+              'x-dead-letter-exchange': 'node.dlx'
             },
             auto_delete: false
           }

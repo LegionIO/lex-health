@@ -18,9 +18,9 @@ module Legion::Extensions::Health
           )
           .where(active: true)
           .each do |node|
-            Legion::Transport::Messages::NodeHealth.new(status:    'unknown',
-                                                        node_id:   node.values[:id],
-                                                        hostname:  node.values[:name],
+            Legion::Transport::Messages::NodeHealth.new(status: 'unknown',
+                                                        node_id: node.values[:id],
+                                                        hostname: node.values[:name],
                                                         timestamp: node.values[:updated]).publish
             nodes.push(node.values[:id])
           end

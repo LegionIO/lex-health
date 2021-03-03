@@ -9,15 +9,15 @@ module Legion::Extensions::Health
         return { success: insert(hostname: hostname, **opts), hostname: hostname, **opts } if item.nil?
 
         if opts.key?(:timestamp) && !item.values[:updated].nil? && item.values[:updated] > Time.parse(opts[:timestamp])
-          return { success:    false,
-                   reason:     'entry already updated',
-                   hostname:   hostname,
+          return { success: false,
+                   reason: 'entry already updated',
+                   hostname: hostname,
                    db_updated: item.values[:updated],
                    **opts }
         end
 
         {
-          success:  item.update(active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP),
+          success: item.update(active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP),
           hostname: hostname,
           **opts
         }
