@@ -1,38 +1,48 @@
 # lex-health: Node Health Monitoring for LegionIO
 
 **Repository Level 3 Documentation**
-- **Category**: `/Users/miverso2/rubymine/legion/extensions/CLAUDE.md`
+- **Parent**: `/Users/miverso2/rubymine/legion/extensions-core/CLAUDE.md`
+- **Grandparent**: `/Users/miverso2/rubymine/legion/CLAUDE.md`
 
 ## Purpose
 
-Legion Extension that reads heartbeat messages from cluster nodes and updates the database with their health status. Includes a watchdog actor for detecting stale/dead nodes.
+Legion Extension that reads heartbeat messages from cluster nodes and updates the database with their health status. Includes a watchdog actor for detecting and expiring stale/dead nodes. Requires `legion-data` (`data_required? true`).
 
+**GitHub**: https://github.com/LegionIO/lex-health
 **License**: MIT
+**Version**: 0.1.5
 
 ## Architecture
 
 ```
 Legion::Extensions::Health
 ├── Actors/
-│   ├── Health             # Processes incoming heartbeat messages
-│   └── Watchdog           # Monitors for stale nodes
+│   ├── Health             # Subscription actor: processes incoming heartbeat messages
+│   └── Watchdog           # Periodic actor: scans for stale nodes
 ├── Runners/
-│   ├── Health             # Heartbeat processing logic
-│   └── Watchdog           # Stale node detection logic
+│   ├── Health             # update, insert, delete node records in DB
+│   └── Watchdog           # expire: marks nodes as unknown if heartbeat is stale
 └── Transport/
     ├── Exchanges/Node     # Node communication exchange
     ├── Queues/Health      # Health check queue
-    └── Messages/Watchdog  # Watchdog message format
+    └── Messages/Watchdog  # NodeHealth message for expiring stale nodes
 ```
 
 ## Key Files
 
 | Path | Purpose |
 |------|---------|
-| `lib/legion/extensions/health.rb` | Entry point, extension registration |
-| `lib/legion/extensions/health/actors/health.rb` | Heartbeat processing actor |
-| `lib/legion/extensions/health/actors/watchdog.rb` | Dead node detection actor |
-| `lib/legion/extensions/health/runners/` | Business logic |
+| `lib/legion/extensions/health.rb` | Entry point, extension registration (`data_required? true`) |
+| `lib/legion/extensions/health/runners/health.rb` | Heartbeat processing: update/insert/delete node DB records |
+| `lib/legion/extensions/health/runners/watchdog.rb` | Stale node detection: expire nodes with heartbeat older than `expire_time` seconds |
+| `lib/legion/extensions/health/actors/health.rb` | AMQP subscription actor |
+| `lib/legion/extensions/health/actors/watchdog.rb` | Periodic watchdog actor |
+
+## Runner Details
+
+**Health runner**: `update(hostname:, **opts)` - upserts node status. Uses timestamp comparison to avoid back-in-time updates. `insert` and `delete` are also available.
+
+**Watchdog runner**: `expire(expire_time: 60, **_opts)` - queries for healthy nodes with `updated` older than `expire_time` seconds, publishes `NodeHealth` messages to transition them to `unknown`.
 
 ## Testing
 
