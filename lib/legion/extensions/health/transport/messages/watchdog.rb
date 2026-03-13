@@ -1,17 +1,27 @@
-module Legion::Extensions::Health::Transport::Messages
-  class Watchdog < Legion::Transport::Message
-    def routing_key
-      'health'
-    end
+# frozen_string_literal: true
 
-    def expiration
-      5000
-    end
+module Legion
+  module Extensions
+    module Health
+      module Transport
+        module Messages
+          class Watchdog < Legion::Transport::Message
+            def routing_key
+              'health'
+            end
 
-    def validate
-      raise 'status should be a string' unless @options[:status].is_a?(String) || @options[:status].nil?
+            def expiration
+              5000
+            end
 
-      @valid = true
+            def validate
+              raise 'status should be a string' unless @options[:status].is_a?(String) || @options[:status].nil?
+
+              @valid = true
+            end
+          end
+        end
+      end
     end
   end
 end

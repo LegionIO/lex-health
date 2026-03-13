@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'legion/extensions/health/version'
@@ -5,21 +7,21 @@ require 'legion/extensions/health/version'
 Gem::Specification.new do |spec|
   spec.name          = 'lex-health'
   spec.version       = Legion::Extensions::Health::VERSION
-  spec.authors       = ['Miverson']
+  spec.authors       = ['Esity']
   spec.email         = ['matthewdiverson@gmail.com']
 
   spec.summary       = 'Legion::Extensions::Health'
   spec.description   = 'Used to read heartbeats and updates the db'
-  spec.homepage      = 'https://bitbucket.org/legion-io/lex-health'
+  spec.homepage      = 'https://github.com/LegionIO/lex-health'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
+  spec.required_ruby_version = '>= 3.4'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://bitbucket.org/legion-io/lex-health'
-  spec.metadata['changelog_uri'] = 'https://bitbucket.org/legion-io/lex-health/CHANGELOG.md'
-  spec.metadata['documentation_uri'] = 'https://legionio.atlassian.net/wiki/spaces/LEX/pages/612171777/LEX+Health'
-  spec.metadata['changelog_uri'] = 'https://legionio.atlassian.net/wiki/spaces/LEX/pages/612270081/'
-  spec.metadata['bug_tracker_uri'] = 'https://bitbucket.org/legion-io/lex-health/issues'
+  spec.metadata['source_code_uri'] = 'https://github.com/LegionIO/lex-health'
+  spec.metadata['changelog_uri'] = 'https://github.com/LegionIO/lex-health/blob/main/CHANGELOG.md'
+  spec.metadata['documentation_uri'] = 'https://github.com/LegionIO/lex-health'
+  spec.metadata['bug_tracker_uri'] = 'https://github.com/LegionIO/lex-health/issues'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

@@ -1,26 +1,23 @@
-# Legion::Extensions::Health
+# lex-health
 
-A Legion extension that subscribes to `Exchange: nodes` and then updates the database with node status messages
+Node health monitoring for [LegionIO](https://github.com/LegionIO/LegionIO). Reads heartbeat messages from cluster nodes, updates the database with their health status, and runs a watchdog actor for detecting stale or dead nodes.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'lex-health'
+```bash
+gem install lex-health
 ```
 
-And then execute:
+## Functions
 
-    $ bundle install
+- **Health** - Process incoming heartbeat messages and update node status
+- **Watchdog** - Monitor for stale nodes and flag them
 
-Or install it yourself as:
+## Requirements
 
-    $ gem install lex-health
-
-## Usage
-*To be added*
+- Ruby >= 3.4
+- [LegionIO](https://github.com/LegionIO/LegionIO) framework
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+MIT
