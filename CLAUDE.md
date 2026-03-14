@@ -18,7 +18,7 @@ Legion Extension that reads heartbeat messages from cluster nodes and updates th
 Legion::Extensions::Health
 ├── Actors/
 │   ├── Health             # Subscription actor: processes incoming heartbeat messages
-│   └── Watchdog           # Periodic actor: scans for stale nodes
+│   └── Watchdog           # Every actor (every 5s): scans for stale nodes, calls expire
 ├── Runners/
 │   ├── Health             # update, insert, delete node records in DB
 │   └── Watchdog           # expire: marks nodes as unknown if heartbeat is stale
@@ -42,7 +42,7 @@ Legion::Extensions::Health
 
 **Health runner**: `update(hostname:, **opts)` - upserts node status. Uses timestamp comparison to avoid back-in-time updates. `insert` and `delete` are also available.
 
-**Watchdog runner**: `expire(expire_time: 60, **_opts)` - queries for healthy nodes with `updated` older than `expire_time` seconds, publishes `NodeHealth` messages to transition them to `unknown`.
+**Watchdog runner**: `expire(expire_time: 60, **_opts)` - queries for healthy nodes with `updated` older than `expire_time` seconds (default: 60), publishes `NodeHealth` messages to transition them to `unknown`. The actor runs every 5 seconds (controlled by `time = 5` in the actor), independently of the `expire_time` threshold.
 
 ## Testing
 

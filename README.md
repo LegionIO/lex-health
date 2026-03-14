@@ -17,7 +17,7 @@ gem install lex-health
 
 The Health runner receives heartbeat messages published by `lex-node` and upserts node records in the database. It uses timestamp comparison to prevent out-of-order updates from rolling back newer status.
 
-The Watchdog actor runs periodically (default: every 60 seconds) and queries for healthy nodes whose last heartbeat timestamp is older than `expire_time` seconds. Those nodes are transitioned to `unknown` by publishing `NodeHealth` messages.
+The Watchdog actor runs every 5 seconds and queries for healthy nodes whose last heartbeat timestamp is older than `expire_time` seconds (default: 60 seconds). Those nodes are transitioned to `unknown` by publishing `NodeHealth` messages.
 
 ## Requirements
 
