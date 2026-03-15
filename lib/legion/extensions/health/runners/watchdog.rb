@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'legion/transport/messages/node_health'
-
 module Legion
   module Extensions
     module Health
@@ -22,10 +20,12 @@ module Legion
               )
               .where(active: true)
               .each do |node|
-                Legion::Transport::Messages::NodeHealth.new(status:    'unknown',
-                                                            node_id:   node.values[:id],
-                                                            hostname:  node.values[:name],
-                                                            timestamp: node.values[:updated]).publish
+                Legion::Extensions::Health::Transport::Messages::Watchdog.new(
+                  status:    'unknown',
+                  node_id:   node.values[:id],
+                  hostname:  node.values[:name],
+                  timestamp: node.values[:updated]
+                ).publish
                 nodes.push(node.values[:id])
               end
             log.debug("count: #{nodes.count}")
