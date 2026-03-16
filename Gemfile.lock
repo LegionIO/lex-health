@@ -61,13 +61,15 @@ GEM
       lint_roller (~> 1.1)
       rubocop (~> 1.81)
     ruby-progressbar (1.13.0)
+    sequel (5.102.0)
+      bigdecimal
+    sqlite3 (2.9.2-arm64-darwin)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
 
 PLATFORMS
   arm64-darwin-25
-  ruby
 
 DEPENDENCIES
   lex-health!
@@ -75,6 +77,8 @@ DEPENDENCIES
   rspec
   rubocop
   rubocop-rspec
+  sequel
+  sqlite3
 
 BUNDLED WITH
    2.6.9

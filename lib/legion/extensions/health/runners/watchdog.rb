@@ -8,17 +8,12 @@ module Legion
           include Legion::Extensions::Helpers::Lex
 
           def expire(expire_time: 60, **_opts)
+            cutoff = Time.now - expire_time
             nodes = []
             Legion::Data::Model::Node
               .where(status: 'healthy')
-              .where(
-                Sequel.lit(
-                  "updated <= DATE_SUB(SYSDATE(), INTERVAL #{expire_time} SECOND)
-                  OR
-                  (updated is null and created <= DATE_SUB(SYSDATE(), INTERVAL #{expire_time} SECOND))"
-                )
-              )
               .where(active: true)
+              .where { (updated <= cutoff) | ((updated =~ nil) & (created <= cutoff)) }
               .each do |node|
                 Legion::Extensions::Health::Transport::Messages::Watchdog.new(
                   status:    'unknown',
