@@ -27,6 +27,37 @@ unless defined?(Legion::Data::Model::Node)
   end
 end
 
+unless DB.table_exists?(:digital_workers)
+  DB.create_table(:digital_workers) do
+    primary_key :id
+    String :worker_id, null: false, unique: true
+    String :name
+    String :health_status, default: 'unknown'
+    DateTime :last_heartbeat_at
+    String :health_node
+    String :lifecycle_state, default: 'active'
+    String :consent_tier, default: 'supervised'
+    Float :trust_score, default: 0.0
+    String :entra_app_id
+    String :owner_msid
+    String :extension_name
+  end
+end
+
+unless defined?(Legion::Data::Model::DigitalWorker)
+  module Legion
+    module Data
+      module Model
+        class DigitalWorker < Sequel::Model(DB[:digital_workers])
+          def worker_id
+            values[:worker_id]
+          end
+        end
+      end
+    end
+  end
+end
+
 unless defined?(Legion::Extensions::Helpers::Lex)
   module Legion
     module Extensions
@@ -73,7 +104,10 @@ RSpec.describe Legion::Extensions::Health::Runners::Watchdog do
     klass.new
   end
 
-  before(:each) { DB[:nodes].delete }
+  before(:each) do
+    DB[:nodes].delete
+    DB[:digital_workers].delete
+  end
 
   describe '#expire' do
     it 'finds nodes with updated older than expire_time seconds' do
@@ -129,6 +163,42 @@ RSpec.describe Legion::Extensions::Health::Runners::Watchdog do
                         created: Time.now - 120, updated: Time.now - 120)
       result = runner.expire(expire_time: 60)
       expect(result[:count]).to eq(0)
+    end
+  end
+
+  describe 'worker offline marking' do
+    before(:each) do
+      DB[:digital_workers].insert(worker_id: 'w1', name: 'worker-1', health_status: 'online',
+                                  health_node: 'dead-node', lifecycle_state: 'active',
+                                  consent_tier: 'supervised', trust_score: 0.5,
+                                  entra_app_id: 'app1', owner_msid: 'ms1', extension_name: 'lex-test')
+      DB[:digital_workers].insert(worker_id: 'w2', name: 'worker-2', health_status: 'online',
+                                  health_node: 'alive-node', lifecycle_state: 'active',
+                                  consent_tier: 'supervised', trust_score: 0.5,
+                                  entra_app_id: 'app2', owner_msid: 'ms2', extension_name: 'lex-test')
+      DB[:nodes].insert(name: 'dead-node', status: 'healthy', active: true,
+                        created: Time.now - 120, updated: Time.now - 120)
+    end
+
+    it 'marks workers on expired node as offline' do
+      runner.expire(expire_time: 60)
+      expect(DB[:digital_workers].where(worker_id: 'w1').first[:health_status]).to eq('offline')
+    end
+
+    it 'does not affect workers on other nodes' do
+      runner.expire(expire_time: 60)
+      expect(DB[:digital_workers].where(worker_id: 'w2').first[:health_status]).to eq('online')
+    end
+
+    it 'does not re-update workers already offline' do
+      DB[:digital_workers].where(worker_id: 'w1').update(health_status: 'offline')
+      runner.expire(expire_time: 60)
+      expect(DB[:digital_workers].where(worker_id: 'w1').first[:health_status]).to eq('offline')
+    end
+
+    it 'handles missing DigitalWorker model gracefully' do
+      hide_const('Legion::Data::Model::DigitalWorker')
+      expect { runner.expire(expire_time: 60) }.not_to raise_error
     end
   end
 end

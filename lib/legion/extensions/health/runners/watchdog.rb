@@ -21,10 +21,25 @@ module Legion
                   hostname:  node.values[:name],
                   timestamp: node.values[:updated]
                 ).publish
+                mark_workers_offline(node_name: node.values[:name])
                 nodes.push(node.values[:id])
               end
             log.debug("count: #{nodes.count}")
             { success: true, count: nodes.count, nodes: nodes }
+          end
+
+          private
+
+          def mark_workers_offline(node_name:)
+            return unless defined?(Legion::Data::Model::DigitalWorker)
+
+            Legion::Data::Model::DigitalWorker
+              .where(health_node: node_name, health_status: 'online')
+              .each do |worker|
+                worker.update(health_status: 'offline')
+              end
+          rescue StandardError => e
+            log.warn "worker offline marking failed: #{e.message}" if respond_to?(:log)
           end
         end
       end
