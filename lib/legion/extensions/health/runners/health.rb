@@ -10,7 +10,11 @@ module Legion
           def update(hostname:, **opts)
             item = Legion::Data::Model::Node[name: hostname]
 
-            return { success: insert(hostname: hostname, **opts), hostname: hostname, **opts } if item.nil?
+            if item.nil?
+              result = insert(hostname: hostname, **opts)
+              update_worker_health(hostname: hostname, **opts)
+              return { success: result, hostname: hostname, **opts }
+            end
 
             if opts.key?(:timestamp) && !item.values[:updated].nil? && item.values[:updated] > Time.parse(opts[:timestamp])
               return { success:    false,
@@ -20,11 +24,15 @@ module Legion
                        **opts }
             end
 
-            {
-              success:  item.update(active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP),
-              hostname: hostname,
-              **opts
-            }
+            update_hash = { active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP }
+            update_hash[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
+            update_hash[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
+            update_hash[:version] = opts[:version] if opts[:version]
+            item.update(update_hash)
+
+            update_worker_health(hostname: hostname, **opts)
+
+            { success: true, hostname: hostname, **opts }
           end
 
           def insert(hostname:, status: 'unknown', **opts)
@@ -32,6 +40,9 @@ module Legion
             insert[:datacenter_id] = opts[:datacenter_id] if opts.key? :datacenter_id
             insert[:environment_id] = opts[:environment_id] if opts.key? :environment_id
             insert[:active] = opts[:active] if opts.key? :active
+            insert[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
+            insert[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
+            insert[:version] = opts[:version] if opts[:version]
 
             { success: true, hostname: hostname, node_id: Legion::Data::Model::Node.insert(insert), **insert }
           end
@@ -39,6 +50,31 @@ module Legion
           def delete(node_id:, **_opts)
             Legion::Data::Model::Node[node_id].delete
             { success: true, node_id: node_id }
+          end
+
+          private
+
+          def update_worker_health(hostname:, **opts)
+            return unless defined?(Legion::Data::Model::DigitalWorker)
+            return unless opts[:hosted_worker_ids].is_a?(Array)
+
+            now = Time.now
+            worker_ids = opts[:hosted_worker_ids]
+
+            worker_ids.each do |wid|
+              Legion::Data::Model::DigitalWorker
+                .where(worker_id: wid)
+                .update(health_status: 'online', last_heartbeat_at: now, health_node: hostname)
+            end
+
+            Legion::Data::Model::DigitalWorker
+              .where(health_node: hostname, health_status: 'online')
+              .exclude(worker_id: worker_ids)
+              .each do |worker|
+                worker.update(health_status: 'unknown', health_node: nil)
+              end
+          rescue StandardError => e
+            log.warn "worker health update failed: #{e.message}" if respond_to?(:log)
           end
         end
       end
