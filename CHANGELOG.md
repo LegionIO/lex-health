@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2026-03-17
+
+### Fixed
+- Watchdog `expire` guards against missing `Legion::Data::Model::Node` constant before use, returning an error hash when the model is unavailable
+
 ## [0.1.7] - 2026-03-16
 
 ### Fixed

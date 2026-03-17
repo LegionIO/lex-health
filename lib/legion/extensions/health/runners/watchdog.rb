@@ -8,6 +8,8 @@ module Legion
           include Legion::Extensions::Helpers::Lex
 
           def expire(expire_time: 60, **_opts)
+            return { success: false, reason: 'Legion::Data::Model::Node not available' } unless defined?(Legion::Data::Model::Node)
+
             cutoff = Time.now - expire_time
             nodes = []
             Legion::Data::Model::Node
