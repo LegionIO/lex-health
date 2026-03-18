@@ -209,7 +209,7 @@ RSpec.describe Legion::Extensions::Health::Runners::Health do
       allow(Legion::Data::Model::Node).to receive(:insert)
         .and_raise(Sequel::UniqueConstraintViolation)
       allow(Legion::Data::Model::Node).to receive(:[]).with(name: 'race-node')
-        .and_return(Legion::Data::Model::Node.new)
+                                                      .and_return(Legion::Data::Model::Node.new)
       expect { runner.insert(hostname: 'race-node', status: 'healthy') }.not_to raise_error
     end
   end

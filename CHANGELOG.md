@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0] - 2026-03-18
+
+### Fixed
+- `active` column now uses boolean `true` instead of integer `1` (PostgreSQL compatibility)
+- Watchdog message routing key changed from `'health'` to `'node.health'` to match queue binding
+- Added `require 'time'` for `Time.parse`
+- Nil guard on `updated` timestamp in back-in-time comparison
+- TOCTOU race condition on concurrent heartbeat inserts (rescue UniqueConstraintViolation)
+- `delete` method nil guard for nonexistent nodes
+- `mark_workers_offline` now clears `health_node` on expired workers
+
+### Changed
+- Entry point `data_required?` is now `self.` (class method) matching framework expectation
+
 ## [0.1.8] - 2026-03-17
 
 ### Fixed
