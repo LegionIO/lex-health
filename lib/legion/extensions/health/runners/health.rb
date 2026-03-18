@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'time'
+
 module Legion
   module Extensions
     module Health
@@ -16,7 +18,7 @@ module Legion
               return { success: result, hostname: hostname, **opts }
             end
 
-            if opts.key?(:timestamp) && !item.values[:updated].nil? && item.values[:updated] > Time.parse(opts[:timestamp])
+            if opts.key?(:timestamp) && item.values[:updated] && item.values[:updated] > Time.parse(opts[:timestamp])
               return { success:    false,
                        reason:     'entry already updated',
                        hostname:   hostname,
@@ -24,7 +26,7 @@ module Legion
                        **opts }
             end
 
-            update_hash = { active: 1, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP }
+            update_hash = { active: true, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP }
             update_hash[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
             update_hash[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
             update_hash[:version] = opts[:version] if opts[:version]
@@ -36,10 +38,9 @@ module Legion
           end
 
           def insert(hostname:, status: 'unknown', **opts)
-            insert = { active: 1, status: status, name: hostname }
+            insert = { active: true, status: status, name: hostname }
             insert[:datacenter_id] = opts[:datacenter_id] if opts.key? :datacenter_id
             insert[:environment_id] = opts[:environment_id] if opts.key? :environment_id
-            insert[:active] = opts[:active] if opts.key? :active
             insert[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
             insert[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
             insert[:version] = opts[:version] if opts[:version]
@@ -48,7 +49,10 @@ module Legion
           end
 
           def delete(node_id:, **_opts)
-            Legion::Data::Model::Node[node_id].delete
+            node = Legion::Data::Model::Node[node_id]
+            return { success: false, error: 'node not found', node_id: node_id } if node.nil?
+
+            node.delete
             { success: true, node_id: node_id }
           end
 

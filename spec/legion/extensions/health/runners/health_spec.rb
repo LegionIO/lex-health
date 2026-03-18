@@ -167,4 +167,44 @@ RSpec.describe Legion::Extensions::Health::Runners::Health do
       expect { runner.update(hostname: 'node-1', status: 'healthy', hosted_worker_ids: ['w1']) }.not_to raise_error
     end
   end
+
+  describe '#update insert path' do
+    it 'sets active as boolean true on new node' do
+      runner.update(hostname: 'new-node', status: 'healthy')
+      node = DB[:nodes].where(name: 'new-node').first
+      expect(node[:active]).to be(true)
+    end
+  end
+
+  describe '#update existing node path' do
+    before(:each) do
+      DB[:nodes].insert(name: 'existing-node', status: 'healthy', active: true,
+                        created: Time.now - 60, updated: Time.now - 60)
+    end
+
+    it 'updates existing node without error' do
+      result = runner.update(hostname: 'existing-node', status: 'healthy')
+      expect(result[:success]).to be(true)
+    end
+
+    it 'handles nil updated timestamp without crashing' do
+      DB[:nodes].where(name: 'existing-node').update(updated: nil)
+      expect { runner.update(hostname: 'existing-node', status: 'healthy', timestamp: Time.now.iso8601) }.not_to raise_error
+    end
+  end
+
+  describe '#delete' do
+    it 'deletes an existing node' do
+      id = DB[:nodes].insert(name: 'to-delete', status: 'healthy', active: true)
+      result = runner.delete(node_id: id)
+      expect(result[:success]).to be(true)
+      expect(DB[:nodes].where(id: id).first).to be_nil
+    end
+
+    it 'returns failure when node does not exist' do
+      result = runner.delete(node_id: 999_999)
+      expect(result[:success]).to be(false)
+      expect(result[:error]).to eq('node not found')
+    end
+  end
 end
