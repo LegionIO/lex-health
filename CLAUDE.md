@@ -10,7 +10,7 @@ Legion Extension that reads heartbeat messages from cluster nodes and updates th
 
 **GitHub**: https://github.com/LegionIO/lex-health
 **License**: MIT
-**Version**: 0.1.7
+**Version**: 0.1.8
 
 ## Architecture
 
