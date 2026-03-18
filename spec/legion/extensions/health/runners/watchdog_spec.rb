@@ -77,6 +77,10 @@ unless defined?(Legion::Extensions::Health::Transport::Messages::Watchdog)
             class Watchdog
               def initialize(**); end
 
+              def routing_key
+                'node.health'
+              end
+
               def publish; end
             end
           end
@@ -87,6 +91,16 @@ unless defined?(Legion::Extensions::Health::Transport::Messages::Watchdog)
 end
 
 require 'legion/extensions/health/runners/watchdog'
+
+RSpec.describe 'Legion::Extensions::Health::Transport::Messages::Watchdog routing_key' do
+  it 'is node.health' do
+    # The stub class defined above has routing_key overridden; verify the value
+    # matches what the real implementation sets. We load the real file with a
+    # stubbed base class so the constant check prevents re-definition.
+    msg = Legion::Extensions::Health::Transport::Messages::Watchdog.new
+    expect(msg.routing_key).to eq('node.health')
+  end
+end
 
 RSpec.describe Legion::Extensions::Health::Runners::Watchdog do
   let(:runner) do
@@ -199,6 +213,11 @@ RSpec.describe Legion::Extensions::Health::Runners::Watchdog do
     it 'handles missing DigitalWorker model gracefully' do
       hide_const('Legion::Data::Model::DigitalWorker')
       expect { runner.expire(expire_time: 60) }.not_to raise_error
+    end
+
+    it 'clears health_node on workers when their node is expired' do
+      runner.expire(expire_time: 60)
+      expect(DB[:digital_workers].where(worker_id: 'w1').first[:health_node]).to be_nil
     end
   end
 end

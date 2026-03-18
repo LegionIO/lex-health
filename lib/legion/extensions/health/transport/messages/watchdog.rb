@@ -7,7 +7,7 @@ module Legion
         module Messages
           class Watchdog < Legion::Transport::Message
             def routing_key
-              'health'
+              'node.health'
             end
 
             def expiration

@@ -38,7 +38,7 @@ module Legion
             Legion::Data::Model::DigitalWorker
               .where(health_node: node_name, health_status: 'online')
               .each do |worker|
-                worker.update(health_status: 'offline')
+                worker.update(health_status: 'offline', health_node: nil)
               end
           rescue StandardError => e
             log.warn "worker offline marking failed: #{e.message}" if respond_to?(:log)
