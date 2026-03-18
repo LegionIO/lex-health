@@ -27,21 +27,19 @@ unless defined?(Legion::Data::Model::Node)
   end
 end
 
-unless DB.table_exists?(:digital_workers)
-  DB.create_table(:digital_workers) do
-    primary_key :id
-    String :worker_id, null: false, unique: true
-    String :name
-    String :health_status, default: 'unknown'
-    DateTime :last_heartbeat_at
-    String :health_node
-    String :lifecycle_state, default: 'active'
-    String :consent_tier, default: 'supervised'
-    Float :trust_score, default: 0.0
-    String :entra_app_id
-    String :owner_msid
-    String :extension_name
-  end
+DB.create_table?(:digital_workers) do
+  primary_key :id
+  String :worker_id, null: false, unique: true
+  String :name
+  String :health_status, default: 'unknown'
+  DateTime :last_heartbeat_at
+  String :health_node
+  String :lifecycle_state, default: 'active'
+  String :consent_tier, default: 'supervised'
+  Float :trust_score, default: 0.0
+  String :entra_app_id
+  String :owner_msid
+  String :extension_name
 end
 
 unless defined?(Legion::Data::Model::DigitalWorker)

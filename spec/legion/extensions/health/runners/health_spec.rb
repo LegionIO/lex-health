@@ -5,35 +5,31 @@ require 'sequel'
 
 DB = Sequel.sqlite unless defined?(DB)
 
-unless DB.table_exists?(:nodes)
-  DB.create_table(:nodes) do
-    primary_key :id
-    String :name
-    String :status
-    TrueClass :active, default: true
-    DateTime :created
-    DateTime :updated
-    String :metrics, text: true
-    String :hosted_worker_ids, text: true
-    String :version
-  end
+DB.create_table?(:nodes) do
+  primary_key :id
+  String :name
+  String :status
+  TrueClass :active, default: true
+  DateTime :created
+  DateTime :updated
+  String :metrics, text: true
+  String :hosted_worker_ids, text: true
+  String :version
 end
 
-unless DB.table_exists?(:digital_workers)
-  DB.create_table(:digital_workers) do
-    primary_key :id
-    String :worker_id, null: false, unique: true
-    String :name
-    String :health_status, default: 'unknown'
-    DateTime :last_heartbeat_at
-    String :health_node
-    String :lifecycle_state, default: 'active'
-    String :consent_tier, default: 'supervised'
-    Float :trust_score, default: 0.0
-    String :entra_app_id
-    String :owner_msid
-    String :extension_name
-  end
+DB.create_table?(:digital_workers) do
+  primary_key :id
+  String :worker_id, null: false, unique: true
+  String :name
+  String :health_status, default: 'unknown'
+  DateTime :last_heartbeat_at
+  String :health_node
+  String :lifecycle_state, default: 'active'
+  String :consent_tier, default: 'supervised'
+  Float :trust_score, default: 0.0
+  String :entra_app_id
+  String :owner_msid
+  String :extension_name
 end
 
 unless defined?(Legion::JSON)
@@ -205,6 +201,16 @@ RSpec.describe Legion::Extensions::Health::Runners::Health do
       result = runner.delete(node_id: 999_999)
       expect(result[:success]).to be(false)
       expect(result[:error]).to eq('node not found')
+    end
+  end
+
+  describe '#insert TOCTOU race' do
+    it 'does not crash when insert hits a unique constraint violation' do
+      allow(Legion::Data::Model::Node).to receive(:insert)
+        .and_raise(Sequel::UniqueConstraintViolation)
+      allow(Legion::Data::Model::Node).to receive(:[]).with(name: 'race-node')
+        .and_return(Legion::Data::Model::Node.new)
+      expect { runner.insert(hostname: 'race-node', status: 'healthy') }.not_to raise_error
     end
   end
 end

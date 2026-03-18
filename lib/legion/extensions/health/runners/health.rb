@@ -45,7 +45,13 @@ module Legion
             insert[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
             insert[:version] = opts[:version] if opts[:version]
 
-            { success: true, hostname: hostname, node_id: Legion::Data::Model::Node.insert(insert), **insert }
+            node_id = begin
+              Legion::Data::Model::Node.insert(insert)
+            rescue Sequel::UniqueConstraintViolation
+              item = Legion::Data::Model::Node[name: hostname]
+              item&.id
+            end
+            { success: true, hostname: hostname, node_id: node_id, **insert }
           end
 
           def delete(node_id:, **_opts)
