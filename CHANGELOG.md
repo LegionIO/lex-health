@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1] - 2026-03-22
+
+### Changed
+- Add legion-cache, legion-crypt, legion-data, legion-json, legion-logging, legion-settings, legion-transport as runtime dependencies
+- Replace direct Legion::JSON.dump calls with json_dump helper in runners/health.rb
+- Update spec_helper with real sub-gem helper stubs
+
 ## [0.2.0] - 2026-03-18
 
 ### Fixed

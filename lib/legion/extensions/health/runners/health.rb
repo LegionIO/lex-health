@@ -27,8 +27,8 @@ module Legion
             end
 
             update_hash = { active: true, status: opts[:status], name: hostname, updated: Sequel::CURRENT_TIMESTAMP }
-            update_hash[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
-            update_hash[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
+            update_hash[:metrics] = json_dump(opts[:metrics]) if opts[:metrics]
+            update_hash[:hosted_worker_ids] = json_dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
             update_hash[:version] = opts[:version] if opts[:version]
             item.update(update_hash)
 
@@ -41,8 +41,8 @@ module Legion
             insert = { active: true, status: status, name: hostname }
             insert[:datacenter_id] = opts[:datacenter_id] if opts.key? :datacenter_id
             insert[:environment_id] = opts[:environment_id] if opts.key? :environment_id
-            insert[:metrics] = Legion::JSON.dump(opts[:metrics]) if opts[:metrics]
-            insert[:hosted_worker_ids] = Legion::JSON.dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
+            insert[:metrics] = json_dump(opts[:metrics]) if opts[:metrics]
+            insert[:hosted_worker_ids] = json_dump(opts[:hosted_worker_ids]) if opts[:hosted_worker_ids]
             insert[:version] = opts[:version] if opts[:version]
 
             node_id = begin
