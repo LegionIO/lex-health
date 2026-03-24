@@ -7,6 +7,8 @@ module Legion
     module Health
       module Actor
         class Watchdog < Legion::Extensions::Actors::Every
+          include Legion::Extensions::Actors::Singleton if defined?(Legion::Extensions::Actors::Singleton)
+
           def runner_function
             'expire'
           end
