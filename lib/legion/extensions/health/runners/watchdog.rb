@@ -41,7 +41,7 @@ module Legion
                 worker.update(health_status: 'offline', health_node: nil)
               end
           rescue StandardError => e
-            log.warn "worker offline marking failed: #{e.message}" if respond_to?(:log)
+            log.warn "worker offline marking failed: #{e.message}"
           end
         end
       end

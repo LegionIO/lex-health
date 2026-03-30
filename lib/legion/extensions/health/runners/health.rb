@@ -47,7 +47,7 @@ module Legion
 
             node_id = begin
               Legion::Data::Model::Node.insert(insert)
-            rescue Sequel::UniqueConstraintViolation
+            rescue Sequel::UniqueConstraintViolation => _e
               item = Legion::Data::Model::Node[name: hostname]
               item&.id
             end
@@ -84,7 +84,7 @@ module Legion
                 worker.update(health_status: 'unknown', health_node: nil)
               end
           rescue StandardError => e
-            log.warn "worker health update failed: #{e.message}" if respond_to?(:log)
+            log.warn "worker health update failed: #{e.message}"
           end
         end
       end

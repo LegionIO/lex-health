@@ -47,7 +47,7 @@ unless defined?(Legion::Data::Model::Node)
   module Legion
     module Data
       module Model
-        class Node < Sequel::Model(DB[:nodes]); end
+        class Node < Sequel::Model(DB[:nodes]); end # rubocop:disable Legion/Framework/EagerSequelModel
       end
     end
   end
@@ -57,7 +57,7 @@ unless defined?(Legion::Data::Model::DigitalWorker)
   module Legion
     module Data
       module Model
-        class DigitalWorker < Sequel::Model(DB[:digital_workers])
+        class DigitalWorker < Sequel::Model(DB[:digital_workers]) # rubocop:disable Legion/Framework/EagerSequelModel
           def worker_id
             values[:worker_id]
           end

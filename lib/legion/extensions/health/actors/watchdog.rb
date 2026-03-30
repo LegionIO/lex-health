@@ -6,7 +6,7 @@ module Legion
   module Extensions
     module Health
       module Actor
-        class Watchdog < Legion::Extensions::Actors::Every
+        class Watchdog < Legion::Extensions::Actors::Every # rubocop:disable Legion/Extension/EveryActorRequiresTime
           include Legion::Extensions::Actors::Singleton if defined?(Legion::Extensions::Actors::Singleton)
 
           def runner_function
